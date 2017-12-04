@@ -54,17 +54,20 @@ public class MainActivity extends Activity {
     private static CustomAdapter adapter;
     RequestQueue queue;
     private String bookTitleSearched=null;
+    private SessionManagement session;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        if (Build.VERSION.SDK_INT >= 23)
-            if ((checkSelfPermission(android.Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) || (checkSelfPermission(android.Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED) || (checkSelfPermission(Manifest.permission.ACCESS_NETWORK_STATE) != PackageManager.PERMISSION_GRANTED)) {
-                Log.v(TAG,"Permission not granted");
-                missingPermissions();
-
-            }
+//        if (Build.VERSION.SDK_INT >= 23)
+//            if ((checkSelfPermission(android.Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) || (checkSelfPermission(android.Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED) || (checkSelfPermission(Manifest.permission.ACCESS_NETWORK_STATE) != PackageManager.PERMISSION_GRANTED)) {
+//                Log.v(TAG,"Permission not granted");
+//                missingPermissions();
+//
+//            }
+        session = new SessionManagement(getApplicationContext());
+        session.loginValidation();
 
         book = (EditText) findViewById(R.id.textview);
         submit = (Button) findViewById(R.id.submit);
