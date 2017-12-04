@@ -29,6 +29,9 @@ public class RegisterActivity extends Activity {
     private TextInputLayout nameTxtInputLayout;
     private TextInputEditText nameTxtInputEditText;
 
+    private TextInputLayout studentIDTxtInputLayout;
+    private TextInputEditText studentIDTxtInputEditText;
+
     private TextInputLayout emailTxtInputLayout;
     private TextInputEditText emailTxtInputEditText;
 
@@ -54,6 +57,9 @@ public class RegisterActivity extends Activity {
         nameTxtInputLayout = (TextInputLayout) findViewById(R.id.textInputLayoutName);
         nameTxtInputEditText = (TextInputEditText) findViewById(R.id.textInputEditTextName);
 
+        studentIDTxtInputLayout = (TextInputLayout) findViewById(R.id.textInputLayoutStudentId);
+        studentIDTxtInputEditText = (TextInputEditText) findViewById(R.id.textInputEditTextStudentId);
+
         emailTxtInputLayout = (TextInputLayout) findViewById(R.id.textInputLayoutEmail);
         emailTxtInputEditText = (TextInputEditText) findViewById(R.id.textInputEditTextEmail);
 
@@ -68,6 +74,9 @@ public class RegisterActivity extends Activity {
             @Override
             public void onClick(View view) {
                 if(inputUtilities.isTxtBoxEmpty(nameTxtInputEditText,nameTxtInputLayout,"Name cannot be empty")){
+                    return;
+                }
+                if(inputUtilities.isTxtBoxEmpty(studentIDTxtInputEditText,studentIDTxtInputLayout,"StudentID cannot be empty")){
                     return;
                 }
                 if(inputUtilities.isTxtBoxEmpty(emailTxtInputEditText,emailTxtInputLayout,"Email cannot be empty")){
@@ -88,7 +97,7 @@ public class RegisterActivity extends Activity {
                     payload.put("name" , nameTxtInputEditText.getText().toString());
                     payload.put("email" , emailTxtInputEditText.getText().toString());
                     payload.put("password" , pwdTxtInputEditText.getText().toString());
-
+                    payload.put("studentID",studentIDTxtInputEditText.getText().toString());
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -136,7 +145,7 @@ public class RegisterActivity extends Activity {
                                 }
                             }
                         });
-                AppSingleton.getInstance(getApplicationContext()).addToRequestQueue(jsonObjectRequest, "Sign up");
+                AppSingleton.get(getApplicationContext()).addRequest(jsonObjectRequest, "Sign up");
 
 
             }

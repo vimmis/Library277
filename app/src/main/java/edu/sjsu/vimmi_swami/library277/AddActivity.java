@@ -17,14 +17,18 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.Toolbar;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.VolleyLog;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
@@ -59,12 +63,13 @@ public class AddActivity extends Activity implements Serializable{
     String simage=null;
     BookModel book = null;
     public static final int RESULT_GALLERY = 0;
-
+    SessionManagement session;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add);
-
+        session = new SessionManagement(getApplicationContext());
+        session.loginValidation();
         title = (EditText) findViewById(R.id.title);
         author = (EditText) findViewById(R.id.author);
         publisher = (EditText) findViewById(R.id.publish);
@@ -132,26 +137,49 @@ public class AddActivity extends Activity implements Serializable{
                 }
                 if(!submit.getText().equals("Add")){
                     // TODO GET LIBRARIAN ID FROM SESSION!!!!!!!!
-                    String url = API.UpdateBooks +
-                            "?book=" + book;
+                    String url = API.UpdateBooks ;
+                    JSONObject payload = new JSONObject();
+                    try {
+                        payload.put("author", book.author);
+                        payload.put("title", book.title);
+                        payload.put("callNumber", book.callnumber);
+                        payload.put("publisher", book.publisher);
+                        payload.put("year", book.year);
+                        payload.put("location", book.location);
+                        payload.put("copies", book.copies);
+                        payload.put("status", book.status);
+                        payload.put("keywords", book.keywords);
+                        payload.put("enteredby", session.getSessionDetails().get(SessionManagement.KEY_USER_ID));
+                        payload.put("image", simage);
+                    }catch (JSONException e) {
+                        e.printStackTrace();
+                    }
                     Log.d("URL", url);
-                    volleyStringRequest(url);
+                    volleyStringRequest(url,payload,false);
                 }else {
                     // TODO GET LIBRARIAN ID FROM SESSION!!!!!!!!
-                    String url = API.PostBooks +
-                            "?author=" + sauthor
-                            + "&title=" + stitle
-                            + "&callNumber=" + scallnumber
-                            + "&publisher=" + spublisher
-                            + "&year=" + syear
-                            + "&location=" + slocation
-                            + "&copies=" + scopies
-                            + "&status=" + sstatus
-                            + "&keywords=" + skeywords
-                            + "&enteredby=1"
-                            + "&image=" + simage;
+                    String url = API.PostBooks ;
+                    JSONObject payload = new JSONObject();
+                    try {
+                        payload.put("author",sauthor);
+                        payload.put("title",stitle);
+                        payload.put("callNumber",scallnumber);
+                        payload.put("publisher",spublisher);
+                        payload.put("year",syear);
+                        payload.put("location",slocation);
+                        payload.put("copies",scopies);
+                        payload.put("status",sstatus);
+                        payload.put("keywords",skeywords);
+                        payload.put("enteredby",session.getSessionDetails().get(SessionManagement.KEY_USER_ID));
+                        payload.put("image",simage);
+
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
                     Log.d("URL", url);
-                    volleyStringRequest(url);
+                    volleyStringRequest(url,payload,true);
                 }
                 Log.d("AFTER VOLLEY","k");
 
@@ -217,40 +245,49 @@ public class AddActivity extends Activity implements Serializable{
     }
 
     //Volley to Add Book data
-    public void volleyStringRequest(String url){
-
-        String  REQUEST_TAG = "volley";
-        JSONObject result = new JSONObject();
-        StringRequest stringRequest = new StringRequest(Request.Method.POST,url,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        Log.d("VolleyREsponse", response);
-                        Toast.makeText(getApplicationContext(),"Book Added!",Toast.LENGTH_SHORT).show();
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                VolleyLog.d("Volley ERROR", error);
-                Log.getStackTraceString(error);
-                Log.d("EROR",error.toString());
-                Log.d("EROR", String.valueOf(error.networkResponse));
-            }
-        })
-        {
-            @Override
-            protected Map<String, String> getParams()
-            {
-                Map<String, String>  params = new HashMap<String, String>();
-                params.put("xyz",	"xys");
-                return params;
-            }
-        };
-
-        // Adding JsonObject request to request queue
-        //AppSingleton.getInstance(getApplicationContext()).addToRequestQueue(jsonObjectReq,REQUEST_TAG);
+    public void volleyStringRequest(String url,JSONObject payload, boolean isAdd){
         Log.d("before VOLLEY","q");
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(isAdd ? Request.Method.POST : Request.Method.PUT,
+                url, payload, new Response.Listener<JSONObject>() {
+                        @Override
+                        public void onResponse(JSONObject response) {
+                            try {
+                                Log.d("VolleyREsponse", response.toString());
+                                Toast.makeText(getApplicationContext(),response.getString("msg"),Toast.LENGTH_SHORT).show();
 
-        queue.add(stringRequest);
+                            } catch (Exception ex) {
+                            }
+                        }
+            }, new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        JSONObject jsonObj = null;
+
+                        NetworkResponse networkResponse = error.networkResponse;
+                        if(networkResponse != null) {
+                            try {
+                                jsonObj = new JSONObject(new String(networkResponse.data));
+                                Toast.makeText(getApplicationContext(),jsonObj.getString("msg"),Toast.LENGTH_SHORT).show();
+
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }else{
+                            Toast.makeText(getApplicationContext(), "There is an error. Please contact admin for more info", Toast.LENGTH_LONG).show();
+
+                        }
+                    }
+                }){
+                    @Override
+                    public Map<String, String> getHeaders() throws AuthFailureError {
+                        HashMap<String, String> headers = new HashMap<String, String>();
+                        //headers.put("Content-Type", "application/json");
+                        headers.put("x-access-token", session.getSessionDetails().get(SessionManagement.KEY_TOKEN));
+                        headers.put("Content-Type","application/json");
+                        return headers;
+                    }
+        };
+        AppSingleton.get(getApplicationContext()).addRequest(jsonObjectRequest, "Add Book");
+
     }
 }

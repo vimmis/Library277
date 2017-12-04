@@ -1,13 +1,13 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item
-        android:id="@+id/action_Menu"
-        android:orderInCategory="100"
-        android:title="Menu"
-        android:showAsAction="always">
+    <item android:id="@+id/action_Menu" android:orderInCategory="100" android:title="Menu" android:showAsAction="always">
         <menu>
             <item
                 android:id="@+id/add"
                 android:title="Add Book"/>
+            <item
+                android:id="@+id/logout"
+                android:title="Logout"/>
         </menu>
+
     </item>
 </menu>

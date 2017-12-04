@@ -35,6 +35,8 @@ public class SessionManagement {
     // Email address (make variable public to access from outside)
     public static final String KEY_EMAIL = "email";
 
+    public static final String KEY_USER_ID = "userID";
+
     // Constructor
     public SessionManagement(Context context){
         this.ctx = context;
@@ -42,10 +44,11 @@ public class SessionManagement {
         editor = pref.edit();
     }
 
-    public void saveLoginSession( String email, String token){
+    public void saveLoginSession( String email, String token,String userID){
         editor.putBoolean(IS_LOGIN,true);
         editor.putString(KEY_EMAIL,email);
         editor.putString(KEY_TOKEN, token);
+        editor.putString(KEY_USER_ID,userID);
         editor.commit();
     }
 
@@ -56,6 +59,8 @@ public class SessionManagement {
         // user token
         sessionDetails.put(KEY_TOKEN, pref.getString(KEY_TOKEN, null));
         // return user
+        sessionDetails.put(KEY_USER_ID,pref.getString(KEY_USER_ID,null));
+
         return sessionDetails;
     }
 

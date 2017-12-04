@@ -120,7 +120,7 @@ public class ConfirmationActivity extends Activity {
                                 }
                             }
                         });
-                AppSingleton.getInstance(getApplicationContext()).addToRequestQueue(jsonObjectRequest, "Account Confirmation");
+                AppSingleton.get(getApplicationContext()).addRequest(jsonObjectRequest, "Account Confirmation");
 
             }
         });
@@ -179,7 +179,7 @@ public class ConfirmationActivity extends Activity {
                                 }
                             }
                         });
-                AppSingleton.getInstance(getApplicationContext()).addToRequestQueue(jsonObjectRequest, "Resend Token");
+                AppSingleton.get(getApplicationContext()).addRequest(jsonObjectRequest, "Resend Token");
             }
         });
     }

@@ -100,7 +100,8 @@ public class LoginActivity extends Activity {
                             if(success){
                                 String email = object.getString("email");
                                 String token = object.getString("token");
-                                session.saveLoginSession(object.getString("email"), object.getString("token"));
+                                String userID = object.getString("userID");
+                                session.saveLoginSession(email, token,userID);
                                 Intent i = new Intent(getApplicationContext(), MainActivity.class);
                                 startActivity(i);
                                 finish();
@@ -137,7 +138,7 @@ public class LoginActivity extends Activity {
                         }
                     }
                 });
-        AppSingleton.getInstance(getApplicationContext()).addToRequestQueue(jsonObjectRequest, "City View Header Current Date");
+        AppSingleton.get(getApplicationContext()).addRequest(jsonObjectRequest, "City View Header Current Date");
 
         // Tag used to cancel the request
         //String cancel_req_tag = "login";

@@ -24,6 +24,8 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -38,8 +40,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.Console;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 import static android.content.ContentValues.TAG;
@@ -84,7 +89,7 @@ public class MainActivity extends Activity {
             public void onClick(View view) {
                 bookTitleSearched = book.getText().toString();
                 // TODO GET LIBRARIAN ID FROM SESSION!!!!!!!!
-                String url = API.GetBooks+"?"+"title="+bookTitleSearched+"&enteredby=1";
+                String url = API.GetBooks+"?"+"title="+bookTitleSearched+"&enteredBy="+session.getSessionDetails().get(SessionManagement.KEY_USER_ID);
                 Log.d("URL", url);
                 volleyJsonArrayRequest(url);
                 // this line adds the data of your EditText and puts in your array
@@ -122,6 +127,9 @@ public class MainActivity extends Activity {
                 Intent aboutIntent = new Intent(MainActivity.this, AddActivity.class);
                 startActivity(aboutIntent);
                 break;
+            case R.id.logout:
+                session.logoutSession();
+                break;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -151,8 +159,14 @@ public class MainActivity extends Activity {
                 int position = ((AdapterView.AdapterContextMenuInfo)info).position;
                 Log.d("Position", String.valueOf(position));
                 BookModel temp=dataModels.get(position);
-                String url = API.DeleteBooks+"?bookId="+temp.getId();
-                volleyStringRequest(url);
+                String url = API.DeleteBooks;
+                JSONObject payload = new JSONObject();
+                try {
+                    payload.put("bookId", temp.getId());
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                volleyStringRequest(url, payload);
                 return true;
             default:
                 return super.onContextItemSelected(item);
@@ -161,81 +175,114 @@ public class MainActivity extends Activity {
     //Volley to Get Books data
     public void volleyJsonArrayRequest(String url){
         dataModels.clear();
-        String  REQUEST_TAG = "volley";
-        JSONObject result = new JSONObject();
-        JsonArrayRequest  jsonObjectReq = new JsonArrayRequest(Request.Method.GET,url, null,
-                new Response.Listener<JSONArray>() {
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET,
+                url, null, new Response.Listener<JSONObject>() {
                     @Override
-                    public void onResponse(JSONArray response) {
-                        Log.d("VolleyREsponse", response.toString());
+                    public void onResponse(JSONObject response) {
                         try {
-                            for(int i = 0; i < response.length(); i++) {
-                                JSONObject objects = response.getJSONObject(i);
-                                dataModels.add(new BookModel(objects.getString("_id"),
-                                        objects.getString("author"),
-                                        objects.getString("title"),
-                                        objects.getString("callNumber"),
-                                        objects.getString("publisher"),
-                                        objects.getString("year"),
-                                        objects.getString("location"),
-                                        objects.getString("copies"),
-                                        objects.getString("status"),
-                                        objects.getString("keywords"),
-                                        objects.getString("image")));
+                            Log.d("Response", response.toString());
+                            JSONArray bookList = response.getJSONArray("books");
+                            try {
+                                for(int i = 0; i < bookList.length(); i++) {
+                                    JSONObject objects = bookList.getJSONObject(i);
+                                    dataModels.add(new BookModel(objects.getString("_id"),
+                                            objects.getString("author"),
+                                            objects.getString("title"),
+                                            objects.getString("callNumber"),
+                                            objects.getString("publisher"),
+                                            objects.getString("year"),
+                                            objects.getString("location"),
+                                            objects.getString("copies"),
+                                            objects.getString("status"),
+                                            objects.getString("keywords"),
+                                            objects.getString("image")));
+                                }
+                                adapter.notifyDataSetChanged();
+                            } catch (JSONException e) {
+                                e.printStackTrace();
                             }
-                            adapter.notifyDataSetChanged();
-                        } catch (JSONException e) {
-                            e.printStackTrace();
+                        } catch (Exception ex) {
                         }
-
                     }
                 }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                VolleyLog.d("Volley ERROR", error);
-                Log.getStackTraceString(error);
-                Log.d("EROR",error.toString());
-                Log.d("EROR", String.valueOf(error.networkResponse));
-            }
-        });
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        JSONObject jsonObj = null;
 
-        // Adding JsonObject request to request queue
-        //AppSingleton.getInstance(getApplicationContext()).addToRequestQueue(jsonObjectReq,REQUEST_TAG);
-        queue.add(jsonObjectReq);
+                        NetworkResponse networkResponse = error.networkResponse;
+                        if(networkResponse != null) {
+                            try {
+                                jsonObj = new JSONObject(new String(networkResponse.data));
+
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }else{
+                            Toast.makeText(getApplicationContext(), "There is an error. Please contact admin for more info", Toast.LENGTH_LONG).show();
+                            Log.e("Error",error.getMessage());
+                        }
+                    }
+                }){
+                    @Override
+                    public Map<String, String> getHeaders() throws AuthFailureError {
+                        HashMap<String, String> headers = new HashMap<String, String>();
+                        //headers.put("Content-Type", "application/json");
+                        String token = session.getSessionDetails().get(SessionManagement.KEY_TOKEN);
+                        headers.put("x-access-token", session.getSessionDetails().get(SessionManagement.KEY_TOKEN));
+                        headers.put("Content-Type","application/json");
+                        return headers;
+                    }
+        };
+        AppSingleton.get(getApplicationContext()).addRequest(jsonObjectRequest, "Get Books");
+
     }
 
     //Volley to Delete Book data
-    public void volleyStringRequest(String url){
-
-        String  REQUEST_TAG = "volley";
-        JSONObject result = new JSONObject();
-        StringRequest stringRequest = new StringRequest(Request.Method.DELETE,url,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        Log.d("VolleyREsponse", response);
-                        if(response.equals("Deleted Book!")){
-                            Toast.makeText(getApplicationContext(),"Book Deleted!",Toast.LENGTH_SHORT).show();
-                            String url = API.GetBooks+"?"+"title="+bookTitleSearched+"&enteredby=1";
-                            volleyJsonArrayRequest(url);
-                        } else {
-                            Toast.makeText(getApplicationContext(),"Book Not Deleted!",Toast.LENGTH_SHORT).show();
-                        }
-
+    public void volleyStringRequest(String url,JSONObject payload){
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST,
+                url, payload , new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                try {
+                    Log.d("Response", response.toString());
+                    if(response.getBoolean("success")){
+                        Toast.makeText(getApplicationContext(),response.getString("msg"),Toast.LENGTH_SHORT).show();
+                        String URL = API.GetBooks + "?" + "title="+bookTitleSearched+"&enteredBy="+session.getSessionDetails().get(SessionManagement.KEY_USER_ID);
+                        volleyJsonArrayRequest(URL);
                     }
-                }, new Response.ErrorListener() {
+                } catch (Exception ex) {
+                }
+            }
+        }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                VolleyLog.d("Volley ERROR", error);
-                Log.getStackTraceString(error);
-                Log.d("EROR",error.toString());
-                Log.d("EROR", String.valueOf(error.networkResponse));
-            }
-        });
+                JSONObject jsonObj = null;
 
-        // Adding JsonObject request to request queue
-        //AppSingleton.getInstance(getApplicationContext()).addToRequestQueue(jsonObjectReq,REQUEST_TAG);
-        queue.add(stringRequest);
+                NetworkResponse networkResponse = error.networkResponse;
+                if(networkResponse != null) {
+                    try {
+                        jsonObj = new JSONObject(new String(networkResponse.data));
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }else{
+                    Toast.makeText(getApplicationContext(), "There is an error. Please contact admin for more info", Toast.LENGTH_LONG).show();
+                    Log.e("Error",error.getMessage());
+                }
+            }
+        }){
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                HashMap<String, String> headers = new HashMap<String, String>();
+                //headers.put("Content-Type", "application/json");
+                headers.put("x-access-token", session.getSessionDetails().get(SessionManagement.KEY_TOKEN));
+                headers.put("Content-Type","application/json");
+                return headers;
+            }
+        };
+        AppSingleton.get(getApplicationContext()).addRequest(jsonObjectRequest, "Delete Book");
+
     }
 
 }
