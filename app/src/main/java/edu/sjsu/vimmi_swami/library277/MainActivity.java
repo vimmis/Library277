@@ -55,7 +55,7 @@ public class MainActivity extends Activity {
     private ListView listView;
     //private ArrayAdapter<String> adapter;
     //private ArrayList<JSONObject> arrayList;
-    ArrayList<BookModel> dataModels;
+    static ArrayList<BookModel> dataModels;
     private static CustomAdapter adapter;
     RequestQueue queue;
     private String bookTitleSearched=null;
@@ -65,12 +65,12 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-//        if (Build.VERSION.SDK_INT >= 23)
-//            if ((checkSelfPermission(android.Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) || (checkSelfPermission(android.Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED) || (checkSelfPermission(Manifest.permission.ACCESS_NETWORK_STATE) != PackageManager.PERMISSION_GRANTED)) {
-//                Log.v(TAG,"Permission not granted");
-//                missingPermissions();
-//
-//            }
+       if (Build.VERSION.SDK_INT >= 23)
+           if ((checkSelfPermission(android.Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) || (checkSelfPermission(android.Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED) || (checkSelfPermission(Manifest.permission.ACCESS_NETWORK_STATE) != PackageManager.PERMISSION_GRANTED)) {
+              Log.v(TAG,"Permission not granted");
+             missingPermissions();
+
+           }
         session = new SessionManagement(getApplicationContext());
         session.loginValidation();
 
@@ -125,6 +125,7 @@ public class MainActivity extends Activity {
         switch (item.getItemId()) {
             case R.id.add:
                 Intent aboutIntent = new Intent(MainActivity.this, AddActivity.class);
+                aboutIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(aboutIntent);
                 break;
             case R.id.logout:
@@ -152,7 +153,8 @@ public class MainActivity extends Activity {
                 Log.d("Position", String.valueOf(pos));
                 BookModel tempedit=dataModels.get(pos);
                 Intent editIntent = new Intent(MainActivity.this, AddActivity.class);
-                // editIntent.putExtra("Bookobject", tempedit);
+                editIntent.putExtra("Objectpos", pos);
+                editIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(editIntent);
                 return true;
             case R.id.delete:
@@ -175,6 +177,7 @@ public class MainActivity extends Activity {
     //Volley to Get Books data
     public void volleyJsonArrayRequest(String url){
         dataModels.clear();
+        adapter.notifyDataSetChanged();
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET,
                 url, null, new Response.Listener<JSONObject>() {
                     @Override
@@ -213,7 +216,7 @@ public class MainActivity extends Activity {
                         if(networkResponse != null) {
                             try {
                                 jsonObj = new JSONObject(new String(networkResponse.data));
-
+                                Toast.makeText(getApplicationContext(),jsonObj.getString("msg"),Toast.LENGTH_LONG).show();
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }

@@ -18,10 +18,12 @@ import android.widget.Toast;
 import android.widget.Toolbar;
 
 import com.android.volley.AuthFailureError;
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
+import com.android.volley.RetryPolicy;
 import com.android.volley.VolleyError;
 import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.JsonObjectRequest;
@@ -46,6 +48,7 @@ public class AddActivity extends Activity implements Serializable{
     EditText status;
     EditText location;
     EditText keywords;
+    TextView heading;
     ImageView image;
     private Button submit;
     private Button cancel;
@@ -61,7 +64,7 @@ public class AddActivity extends Activity implements Serializable{
     String slocation=null;
     String skeywords=null;
     String simage=null;
-    BookModel book = null;
+    int bookpos = 96321456;
     public static final int RESULT_GALLERY = 0;
     SessionManagement session;
     @Override
@@ -70,6 +73,8 @@ public class AddActivity extends Activity implements Serializable{
         setContentView(R.layout.activity_add);
         session = new SessionManagement(getApplicationContext());
         session.loginValidation();
+
+        heading = (TextView) findViewById(R.id.heading);
         title = (EditText) findViewById(R.id.title);
         author = (EditText) findViewById(R.id.author);
         publisher = (EditText) findViewById(R.id.publish);
@@ -83,38 +88,32 @@ public class AddActivity extends Activity implements Serializable{
         cancel = (Button) findViewById(R.id.cancel);
         upload = (Button) findViewById(R.id.upload);
         image = (ImageView) findViewById(R.id.book_cover);
-        //Let by default be ""
 
-        title.setText("");
-        author.setText("");
-        publisher.setText("");
-        year.setText("");
-        copies.setText("");
-        callnumber.setText("");
-        status.setText("");
-        location.setText("");
-        keywords.setText("");
+        clearinput();
 
         Intent i = getIntent();
-        book = (BookModel)i.getSerializableExtra("Bookobject");
-        if (book != null){
-            title.setText(book.getTitle());
-            author.setText(book.getAuthor());
-            publisher.setText(book.getPublisher());
-            year.setText(book.getYear());
-            copies.setText(book.getCopies());
-            callnumber.setText(book.getCallnumber());
-            status.setText(book.getStatus());
-            location.setText(book.getLocation());
-            keywords.setText(book.getKeywords());
+        bookpos = i.getIntExtra("Objectpos",96321456);
+        Bundle temp = i.getExtras();
+        if (temp != null && bookpos!= 96321456 ){
+
+            title.setText(MainActivity.dataModels.get(bookpos).getTitle());
+            author.setText(MainActivity.dataModels.get(bookpos).getAuthor());
+            publisher.setText(MainActivity.dataModels.get(bookpos).getPublisher());
+            year.setText(MainActivity.dataModels.get(bookpos).getYear());
+            copies.setText(MainActivity.dataModels.get(bookpos).getCopies());
+            callnumber.setText(MainActivity.dataModels.get(bookpos).getCallnumber());
+            status.setText(MainActivity.dataModels.get(bookpos).getStatus());
+            location.setText(MainActivity.dataModels.get(bookpos).getLocation());
+            keywords.setText(MainActivity.dataModels.get(bookpos).getKeywords());
             submit.setText("Edit");
+            heading.setText("Edit Book");
         }
         queue = Volley.newRequestQueue(getApplicationContext());
 
         submit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(!submit.getText().equals("Add")){
+                /*if(!submit.getText().equals("Add")){
                     book.setTitle(title.getText().toString());
                     book.setTitle(author.getText().toString());
                     book.setTitle(publisher.getText().toString());
@@ -134,23 +133,31 @@ public class AddActivity extends Activity implements Serializable{
                     sstatus = status.getText().toString();
                     slocation = location.getText().toString();
                     skeywords = keywords.getText().toString();
+                }*/
+                JSONObject payload = new JSONObject();
+                try {
+                    payload.put("author", author.getText());
+                    payload.put("title", title.getText());
+                    payload.put("callNumber", callnumber.getText());
+                    payload.put("publisher", publisher.getText());
+                    payload.put("year", year.getText());
+                    payload.put("location", location.getText());
+                    payload.put("copies", copies.getText());
+                    payload.put("status", status.getText());
+                    payload.put("keywords", keywords.getText());
+                    payload.put("enteredby", session.getSessionDetails().get(SessionManagement.KEY_USER_ID));
+                    payload.put("image", simage);
+                }catch (JSONException e) {
+                    e.printStackTrace();
                 }
                 if(!submit.getText().equals("Add")){
                     // TODO GET LIBRARIAN ID FROM SESSION!!!!!!!!
                     String url = API.UpdateBooks ;
-                    JSONObject payload = new JSONObject();
+
                     try {
-                        payload.put("author", book.author);
-                        payload.put("title", book.title);
-                        payload.put("callNumber", book.callnumber);
-                        payload.put("publisher", book.publisher);
-                        payload.put("year", book.year);
-                        payload.put("location", book.location);
-                        payload.put("copies", book.copies);
-                        payload.put("status", book.status);
-                        payload.put("keywords", book.keywords);
-                        payload.put("enteredby", session.getSessionDetails().get(SessionManagement.KEY_USER_ID));
-                        payload.put("image", simage);
+                        payload.put("oauthor", MainActivity.dataModels.get(bookpos).getAuthor());
+                        payload.put("otitle", MainActivity.dataModels.get(bookpos).getTitle());
+
                     }catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -159,42 +166,11 @@ public class AddActivity extends Activity implements Serializable{
                 }else {
                     // TODO GET LIBRARIAN ID FROM SESSION!!!!!!!!
                     String url = API.PostBooks ;
-                    JSONObject payload = new JSONObject();
-                    try {
-                        payload.put("author",sauthor);
-                        payload.put("title",stitle);
-                        payload.put("callNumber",scallnumber);
-                        payload.put("publisher",spublisher);
-                        payload.put("year",syear);
-                        payload.put("location",slocation);
-                        payload.put("copies",scopies);
-                        payload.put("status",sstatus);
-                        payload.put("keywords",skeywords);
-                        payload.put("enteredby",session.getSessionDetails().get(SessionManagement.KEY_USER_ID));
-                        payload.put("image",simage);
-
-
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-
                     Log.d("URL", url);
                     volleyStringRequest(url,payload,true);
                 }
                 Log.d("AFTER VOLLEY","k");
 
-                //clear text later
-                title.setText("");
-                title.setText("");
-                author.setText("");
-                publisher.setText("");
-                year.setText("");
-                copies.setText("");
-                callnumber.setText("");
-                status.setText("");
-                location.setText("");
-                keywords.setText("");
-                image.setImageDrawable(null);
             }
         });
 
@@ -234,8 +210,8 @@ public class AddActivity extends Activity implements Serializable{
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
                     bm.compress(Bitmap.CompressFormat.JPEG, 100, baos);
                     byte[] b = baos.toByteArray();
-                    //simage = Base64.encodeToString(b, Base64.NO_WRAP | Base64.URL_SAFE);
-                    simage="";
+                    simage = Base64.encodeToString(b, Base64.NO_WRAP | Base64.URL_SAFE);
+                    //simage="";
                     Log.d("Stringimage", simage);
                 }
                 break;
@@ -243,6 +219,8 @@ public class AddActivity extends Activity implements Serializable{
                 break;
         }
     }
+
+
 
     //Volley to Add Book data
     public void volleyStringRequest(String url,JSONObject payload, boolean isAdd){
@@ -253,10 +231,11 @@ public class AddActivity extends Activity implements Serializable{
                         public void onResponse(JSONObject response) {
                             try {
                                 Log.d("VolleyREsponse", response.toString());
-                                Toast.makeText(getApplicationContext(),response.getString("msg"),Toast.LENGTH_SHORT).show();
+                                Toast.makeText(getApplicationContext(),response.getString("msg"),Toast.LENGTH_LONG).show();
 
                             } catch (Exception ex) {
                             }
+                            clearinput();
                         }
             }, new Response.ErrorListener() {
                     @Override
@@ -267,7 +246,7 @@ public class AddActivity extends Activity implements Serializable{
                         if(networkResponse != null) {
                             try {
                                 jsonObj = new JSONObject(new String(networkResponse.data));
-                                Toast.makeText(getApplicationContext(),jsonObj.getString("msg"),Toast.LENGTH_SHORT).show();
+                                Toast.makeText(getApplicationContext(),jsonObj.getString("msg"),Toast.LENGTH_LONG).show();
 
                             } catch (JSONException e) {
                                 e.printStackTrace();
@@ -276,6 +255,7 @@ public class AddActivity extends Activity implements Serializable{
                             Toast.makeText(getApplicationContext(), "There is an error. Please contact admin for more info", Toast.LENGTH_LONG).show();
 
                         }
+                        clearinput();
                     }
                 }){
                     @Override
@@ -287,7 +267,25 @@ public class AddActivity extends Activity implements Serializable{
                         return headers;
                     }
         };
+        int socketTimeout = 30000;
+        RetryPolicy policy = new DefaultRetryPolicy(socketTimeout, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
+        jsonObjectRequest.setRetryPolicy(policy);
         AppSingleton.get(getApplicationContext()).addRequest(jsonObjectRequest, "Add Book");
 
+    }
+
+    private void clearinput(){
+
+        title.setText("");
+        title.setText("");
+        author.setText("");
+        publisher.setText("");
+        year.setText("");
+        copies.setText("");
+        callnumber.setText("");
+        status.setText("");
+        location.setText("");
+        keywords.setText("");
+        image.setImageDrawable(null);
     }
 }

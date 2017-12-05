@@ -90,12 +90,13 @@ public class CustomAdapter extends ArrayAdapter<BookModel>{
         viewHolder.status.setText("Status: "+dataModel.getStatus());
         viewHolder.location.setText("Location: "+dataModel.getLocation());
         viewHolder.keywords.setText("Keywords: "+dataModel.getKeywords());
-        /*
+
         byte[] decodedString = Base64.decode(dataModel.getImage(), Base64.DEFAULT);
         Log.d("Decoded", String.valueOf(decodedString));
+        Log.d("DecodedLength", String.valueOf(decodedString.length));
         Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
         viewHolder.image.setImageBitmap(decodedByte);
-        */
+
         // Return the completed view to render on screen
         return convertView;
     }
