@@ -54,15 +54,7 @@ public class AddActivity extends Activity implements Serializable{
     private Button cancel;
     private Button upload;
     RequestQueue queue;
-    String stitle=null;
-    String sauthor=null;
-    String spublisher=null;
-    String syear=null;
-    String scopies=null;
-    String scallnumber=null;
-    String sstatus=null;
-    String slocation=null;
-    String skeywords=null;
+
     String simage=null;
     int bookpos = 96321456;
     public static final int RESULT_GALLERY = 0;
@@ -105,6 +97,10 @@ public class AddActivity extends Activity implements Serializable{
             status.setText(MainActivity.dataModels.get(bookpos).getStatus());
             location.setText(MainActivity.dataModels.get(bookpos).getLocation());
             keywords.setText(MainActivity.dataModels.get(bookpos).getKeywords());
+            byte[] decodedString = Base64.decode(MainActivity.dataModels.get(bookpos).getImage(), Base64.DEFAULT);
+            Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+            image.setImageBitmap(decodedByte);
+
             submit.setText("Edit");
             heading.setText("Edit Book");
         }
@@ -113,27 +109,7 @@ public class AddActivity extends Activity implements Serializable{
         submit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                /*if(!submit.getText().equals("Add")){
-                    book.setTitle(title.getText().toString());
-                    book.setTitle(author.getText().toString());
-                    book.setTitle(publisher.getText().toString());
-                    book.setTitle(year.getText().toString());
-                    book.setTitle(copies.getText().toString());
-                    book.setTitle(callnumber.getText().toString());
-                    book.setTitle(status.getText().toString());
-                    book.setTitle(location.getText().toString());
-                    book.setTitle(keywords.getText().toString());
-                }else {
-                    stitle = title.getText().toString();
-                    sauthor = author.getText().toString();
-                    spublisher = publisher.getText().toString();
-                    syear = year.getText().toString();
-                    scopies = copies.getText().toString();
-                    scallnumber = callnumber.getText().toString();
-                    sstatus = status.getText().toString();
-                    slocation = location.getText().toString();
-                    skeywords = keywords.getText().toString();
-                }*/
+
                 JSONObject payload = new JSONObject();
                 try {
                     payload.put("author", author.getText());
@@ -146,7 +122,11 @@ public class AddActivity extends Activity implements Serializable{
                     payload.put("status", status.getText());
                     payload.put("keywords", keywords.getText());
                     payload.put("enteredby", session.getSessionDetails().get(SessionManagement.KEY_USER_ID));
-                    payload.put("image", simage);
+                    Bitmap bm =((BitmapDrawable) image.getDrawable()).getBitmap();
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    bm.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+                    byte[] b = baos.toByteArray();
+                    payload.put("image",Base64.encodeToString(b, Base64.NO_WRAP));
                 }catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -210,9 +190,14 @@ public class AddActivity extends Activity implements Serializable{
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
                     bm.compress(Bitmap.CompressFormat.JPEG, 100, baos);
                     byte[] b = baos.toByteArray();
-                    simage = Base64.encodeToString(b, Base64.NO_WRAP | Base64.URL_SAFE);
+                    simage = Base64.encodeToString(b, Base64.NO_WRAP);
                     //simage="";
+
                     Log.d("Stringimage", simage);
+                    byte[] decodedString = Base64.decode(simage, Base64.DEFAULT);
+                    Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+                    image.setImageBitmap(decodedByte);
+
                 }
                 break;
             default:

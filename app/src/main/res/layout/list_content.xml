@@ -1,4 +1,5 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal">
@@ -15,14 +16,16 @@
             android:layout_height="fill_parent"
             android:layout_weight="1"
             android:orientation="vertical">
-                <TextView
-                    android:id="@+id/title"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="C=="
-                    android:maxLines="5"
-                    android:textColor="@android:color/black"
-                    android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:maxLines="5"
+                android:text="C=="
+                android:textSize="20sp"
+                android:textColor="@android:color/black"
+                android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/author"
@@ -30,6 +33,7 @@
                     android:layout_height="wrap_content"
                     android:maxLines="5"
                     android:text="Bengaluru"
+                    android:textSize="20sp"
                     android:textColor="@android:color/black"
                     android:textStyle="bold" />
 
@@ -39,6 +43,7 @@
                     android:layout_height="wrap_content"
                     android:maxLines="5"
                     android:text="IEEE23"
+                    android:textSize="20sp"
                     android:textColor="@android:color/black"
                     android:textStyle="bold" />
                 <TextView
@@ -47,6 +52,7 @@
                     android:layout_height="wrap_content"
                     android:text="2003"
                     android:maxLines="5"
+                    android:textSize="20sp"
                     android:textColor="@android:color/black"
                     android:textStyle="bold" />
                 <TextView
@@ -55,6 +61,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="23"
+                    android:textSize="20sp"
                     android:textColor="@android:color/black"
                     android:textStyle="bold" />
 
@@ -68,8 +75,8 @@
                     android:id="@+id/book_cover"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_marginLeft="20dp"
-                    android:layout_marginRight="20dp"
+                    android:layout_marginLeft="15dp"
+                    android:layout_marginRight="15dp"
                     />
             </LinearLayout>
 
@@ -86,6 +93,7 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
+            android:textSize="20sp"
             android:text="12345678"
             android:textColor="@android:color/black"
             android:textStyle="bold" />
@@ -94,6 +102,7 @@
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="match_parent"
+            android:textSize="20sp"
             android:text="New"
             android:textColor="@android:color/black"
             android:textStyle="bold" />
@@ -105,12 +114,14 @@
         android:text="7th floor , D:23"
         android:layout_below="@id/layout2"
         android:textColor="@android:color/black"
+        android:textSize="20sp"
         android:textStyle="bold" />
     <TextView
         android:id="@+id/keywords"
         android:layout_below="@id/location"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:textSize="20sp"
         android:text="C, programming, software, oops"
         android:textColor="@android:color/black"
         android:textStyle="bold" />
