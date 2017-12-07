@@ -122,9 +122,9 @@ public class AddActivity extends Activity implements Serializable{
                     payload.put("status", status.getText());
                     payload.put("keywords", keywords.getText());
                     payload.put("enteredby", session.getSessionDetails().get(SessionManagement.KEY_USER_ID));
-                    Bitmap bm =((BitmapDrawable) image.getDrawable()).getBitmap();
+                    //Bitmap bm =((BitmapDrawable) image.getDrawable()).getBitmap();
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    bm.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+                    //bm.compress(Bitmap.CompressFormat.JPEG, 100, baos);
                     byte[] b = baos.toByteArray();
                     payload.put("image",Base64.encodeToString(b, Base64.NO_WRAP));
                 }catch (JSONException e) {

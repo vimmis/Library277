@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="edu.sjsu.vimmi_swami.library277">
-    <uses-permission android:name="android.permission.INTERNET"/>
+
+    <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -14,21 +16,24 @@
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".AddActivity"
-            android:theme="@style/AppTheme">
-        </activity>
-        <activity android:name=".RegisterActivity"
-            android:theme="@style/AppTheme1">
-        </activity>
-        <activity android:name=".LoginActivity"
-            android:theme="@style/AppTheme1">
-        </activity>
-        <activity android:name=".ConfirmationActivity"
-            android:theme="@style/AppTheme1">
-        </activity>
+        <activity
+            android:name=".AddActivity"
+            android:theme="@style/AppTheme" />
+        <activity
+            android:name=".RegisterActivity"
+            android:theme="@style/AppTheme1" />
+        <activity
+            android:name=".LoginActivity"
+            android:theme="@style/AppTheme1" />
+        <activity
+            android:name=".ConfirmationActivity"
+            android:theme="@style/AppTheme1" />
+        <activity android:name=".CheckOutDetailActivity" />
+        <activity android:name=".PatronActivity"></activity>
     </application>
 
 </manifest>

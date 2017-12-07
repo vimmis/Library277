@@ -102,7 +102,7 @@ public class LoginActivity extends Activity {
                                 String token = object.getString("token");
                                 String userID = object.getString("userID");
                                 session.saveLoginSession(email, token,userID);
-                                Intent i = new Intent(getApplicationContext(), MainActivity.class);
+                                Intent i = new Intent(getApplicationContext(), PatronActivity.class);
                                 startActivity(i);
                                 finish();
                             }else{

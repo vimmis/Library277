@@ -46,11 +46,12 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Arrays;
 
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 import static android.content.ContentValues.TAG;
 
-public class MainActivity extends Activity {
+public class PatronActivity extends Activity {
     private EditText book;
     private Button submit;
     private ListView listView;
@@ -63,10 +64,12 @@ public class MainActivity extends Activity {
     private String bookTitleSearched=null;
     private SessionManagement session;
     private CheckBox checkBox;
+    private Button checkout;
+    static ArrayList<Integer> select = new ArrayList<Integer>();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_patron);
 //       if (Build.VERSION.SDK_INT >= 23)
 //           if ((checkSelfPermission(android.Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) || (checkSelfPermission(android.Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED) || (checkSelfPermission(Manifest.permission.ACCESS_NETWORK_STATE) != PackageManager.PERMISSION_GRANTED)) {
 //              Log.v(TAG,"Permission not granted");
@@ -85,19 +88,28 @@ public class MainActivity extends Activity {
         adapter= new CustomAdapter(dataModels,getApplicationContext());
         listView.setAdapter(adapter);
 
+        checkout = (Button) findViewById(R.id.checkout1);
 
         submit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 bookTitleSearched = book.getText().toString();
                 // TODO GET LIBRARIAN ID FROM SESSION!!!!!!!!
-                String url = API.GetBooks+"?"+"title="+bookTitleSearched+"&enteredBy="+session.getSessionDetails().get(SessionManagement.KEY_USER_ID);
+                String url = API.GetBooks+"?"+"title="+bookTitleSearched;
                 Log.d("URL", url);
                 volleyJsonArrayRequest(url);
                 // this line adds the data of your EditText and puts in your array
                 //arrayList.add();
                 // next thing you have to do is check if your adapter has changed
                 //adapter.notifyDataSetChanged();
+            }
+        });
+        checkout.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view){
+                Intent checkoutIntent = new Intent(PatronActivity.this, CheckOutDetailActivity.class);
+                checkoutIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(checkoutIntent);
             }
         });
     }
@@ -147,11 +159,6 @@ public class MainActivity extends Activity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.add:
-                Intent aboutIntent = new Intent(MainActivity.this, AddActivity.class);
-                aboutIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                startActivity(aboutIntent);
-                break;
             case R.id.logout:
                 session.logoutSession();
                 break;
@@ -164,36 +171,47 @@ public class MainActivity extends Activity {
         super.onCreateContextMenu(menu, v, menuInfo);
         if (v.getId()==R.id.list) {
             MenuInflater inflater = getMenuInflater();
-            inflater.inflate(R.menu.menu_list, menu);
+            inflater.inflate(R.menu.check_list, menu);
         }
+
     }
 
     @Override
     public boolean onContextItemSelected(MenuItem item) {
         AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
-        //int count = 0;
+        int count = 0;
+
         switch(item.getItemId()) {
-            case R.id.edit:
+            case R.id.select:
                 int pos = ((AdapterView.AdapterContextMenuInfo)info).position;
                 Log.d("Position", String.valueOf(pos));
                 BookModel tempedit=dataModels.get(pos);
-                Intent editIntent = new Intent(MainActivity.this, AddActivity.class);
-                editIntent.putExtra("Objectpos", pos);
-                editIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                startActivity(editIntent);
+                if(select.contains(pos))
+                {
+                    Toast.makeText(getApplicationContext(),"Already selected",Toast.LENGTH_LONG).show();
+                }
+                else if (select.size() == 3){
+                    Toast.makeText(getApplicationContext(),"Exceed number of checkout",Toast.LENGTH_LONG).show();
+                }
+                else
+                {
+                    select.add(pos);
+                    count++;
+                }
+
                 return true;
-            case R.id.delete:
+            case R.id.unselect:
                 int position = ((AdapterView.AdapterContextMenuInfo)info).position;
                 Log.d("Position", String.valueOf(position));
                 BookModel temp=dataModels.get(position);
-                String url = API.DeleteBooks;
-                JSONObject payload = new JSONObject();
-                try {
-                    payload.put("bookId", temp.getId());
-                } catch (JSONException e) {
-                    e.printStackTrace();
+                if(!select.contains(position))
+                {
+                    Toast.makeText(getApplicationContext(),"Not on the list",Toast.LENGTH_LONG).show();
                 }
-                volleyStringRequest(url, payload);
+                else{
+                    select.remove(position);
+                    count--;
+                }
                 return true;
             default:
                 return super.onContextItemSelected(item);
@@ -205,61 +223,61 @@ public class MainActivity extends Activity {
         adapter.notifyDataSetChanged();
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET,
                 url, null, new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        try {
-                            Log.d("Response", response.toString());
-                            JSONArray bookList = response.getJSONArray("books");
-                            try {
-                                for(int i = 0; i < bookList.length(); i++) {
-                                    JSONObject objects = bookList.getJSONObject(i);
-                                    dataModels.add(new BookModel(objects.getString("_id"),
-                                            objects.getString("author"),
-                                            objects.getString("title"),
-                                            objects.getString("callNumber"),
-                                            objects.getString("publisher"),
-                                            objects.getString("year"),
-                                            objects.getString("location"),
-                                            objects.getString("copies"),
-                                            objects.getString("status"),
-                                            objects.getString("keywords"),
-                                            objects.getString("image")));
-                                }
-                                adapter.notifyDataSetChanged();
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-                        } catch (Exception ex) {
+            @Override
+            public void onResponse(JSONObject response) {
+                try {
+                    Log.d("Response", response.toString());
+                    JSONArray bookList = response.getJSONArray("books");
+                    try {
+                        for(int i = 0; i < bookList.length(); i++) {
+                            JSONObject objects = bookList.getJSONObject(i);
+                            dataModels.add(new BookModel(objects.getString("_id"),
+                                    objects.getString("author"),
+                                    objects.getString("title"),
+                                    objects.getString("callNumber"),
+                                    objects.getString("publisher"),
+                                    objects.getString("year"),
+                                    objects.getString("location"),
+                                    objects.getString("copies"),
+                                    objects.getString("status"),
+                                    objects.getString("keywords"),
+                                    objects.getString("image")));
                         }
+                        adapter.notifyDataSetChanged();
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
-                }, new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        JSONObject jsonObj = null;
+                } catch (Exception ex) {
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                JSONObject jsonObj = null;
 
-                        NetworkResponse networkResponse = error.networkResponse;
-                        if(networkResponse != null) {
-                            try {
-                                jsonObj = new JSONObject(new String(networkResponse.data));
-                                Toast.makeText(getApplicationContext(),jsonObj.getString("msg"),Toast.LENGTH_LONG).show();
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-                        }else{
-                            Toast.makeText(getApplicationContext(), "There is an error. Please contact admin for more info", Toast.LENGTH_LONG).show();
-                            Log.e("Error",error.getMessage());
-                        }
+                NetworkResponse networkResponse = error.networkResponse;
+                if(networkResponse != null) {
+                    try {
+                        jsonObj = new JSONObject(new String(networkResponse.data));
+                        Toast.makeText(getApplicationContext(),jsonObj.getString("msg"),Toast.LENGTH_LONG).show();
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
-                }){
-                    @Override
-                    public Map<String, String> getHeaders() throws AuthFailureError {
-                        HashMap<String, String> headers = new HashMap<String, String>();
-                        //headers.put("Content-Type", "application/json");
-                        String token = session.getSessionDetails().get(SessionManagement.KEY_TOKEN);
-                        headers.put("x-access-token", session.getSessionDetails().get(SessionManagement.KEY_TOKEN));
-                        headers.put("Content-Type","application/json");
-                        return headers;
-                    }
+                }else{
+                    Toast.makeText(getApplicationContext(), "There is an error. Please contact admin for more info", Toast.LENGTH_LONG).show();
+                    Log.e("Error",error.getMessage());
+                }
+            }
+        }){
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                HashMap<String, String> headers = new HashMap<String, String>();
+                //headers.put("Content-Type", "application/json");
+                String token = session.getSessionDetails().get(SessionManagement.KEY_TOKEN);
+                headers.put("x-access-token", session.getSessionDetails().get(SessionManagement.KEY_TOKEN));
+                headers.put("Content-Type","application/json");
+                return headers;
+            }
         };
         AppSingleton.get(getApplicationContext()).addRequest(jsonObjectRequest, "Get Books");
 
