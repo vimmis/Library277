@@ -11,6 +11,9 @@ public class API {
         public static final String PostBooks = URL+"/api/addbooks";
         public static final String UpdateBooks = URL+"/api/updatebooks";
         public static final String DeleteBooks = URL+"/api/deletebooks";
+        public static final String CheckoutBooks = URL+"/api/borrow";
+        public static final String ReturnBooks = URL+"/api/returns";
+        public static final String GetBorrowedBooks = URL+"/api/getBooksBorrowedBy";
 
         public static String registerURL(){
                 return URL + "/register";

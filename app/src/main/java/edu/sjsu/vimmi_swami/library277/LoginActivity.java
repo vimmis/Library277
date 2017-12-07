@@ -101,7 +101,8 @@ public class LoginActivity extends Activity {
                                 String email = object.getString("email");
                                 String token = object.getString("token");
                                 String userID = object.getString("userID");
-                                session.saveLoginSession(email, token,userID);
+                                String userRole = object.getString("role");
+                                session.saveLoginSession(email, token,userID,userRole);
                                 Intent i = new Intent(getApplicationContext(), MainActivity.class);
                                 startActivity(i);
                                 finish();

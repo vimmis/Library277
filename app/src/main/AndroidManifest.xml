@@ -29,6 +29,12 @@
         <activity android:name=".ConfirmationActivity"
             android:theme="@style/AppTheme1">
         </activity>
+        <activity android:name=".MainPatronActivity"
+            android:theme="@style/AppTheme">
+        </activity>
+        <activity android:name=".PatronBorrowedBooksActivity"
+            android:theme="@style/AppTheme">
+        </activity>
     </application>
 
 </manifest>

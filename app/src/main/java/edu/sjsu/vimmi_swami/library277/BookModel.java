@@ -18,7 +18,7 @@ public class BookModel {
     String status;
     String keywords;
     String image;
-
+    boolean isSelected;
     public BookModel(String id,String author, String title, String callnumber, String publisher, String year, String location, String copies, String status, String keywords, String image) {
         this.id = id;
         this.author = author;
@@ -31,9 +31,16 @@ public class BookModel {
         this.status = status;
         this.keywords = keywords;
         this.image = image;
+        this.isSelected = false;
     }
 
 
+    public boolean getIsSelected(){
+        return isSelected;
+    }
+    public void setIsSelect(boolean selected){
+        this.isSelected = selected;
+    }
     public String getId() {
         return id;
     }
