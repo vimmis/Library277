@@ -18,7 +18,7 @@
 
         <LinearLayout
             android:id="@+id/patronSearchLayout1.1"
-            android:layout_width="150dp"
+            android:layout_width="0dp"
             android:layout_height="fill_parent"
             android:layout_weight="1"
             android:orientation="vertical">
@@ -76,7 +76,7 @@
 
         <LinearLayout
             android:id="@+id/patronSearchLayout1.2"
-            android:layout_width="20dp"
+            android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1">
 
@@ -89,6 +89,23 @@
 
         </LinearLayout>
 
+        <LinearLayout
+            android:id="@+id/patronSearchLayout1.3"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:weightSum="1"
+            android:layoutDirection="rtl">
+
+            <CheckBox
+                android:id="@+id/bookSelectionCheckBox"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@color/common_action_bar_splitter"
+                android:focusable="false"
+                android:enabled="true"/>
+
+        </LinearLayout>
 
 
     </LinearLayout>
@@ -137,11 +154,6 @@
         android:textColor="@android:color/black"
         android:textStyle="bold" />
 
-    <CheckBox
-        android:id="@+id/bookSelectionCheckBox"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/patronSearchKeywords"
-        android:focusable="false"/>
+
 
 </RelativeLayout>
